@@ -1,71 +1,14 @@
 <?php
 
+require("fonctions.php");
+
 $host="localhost";
 $user="root";
 $password="";
 $db="restaurant";
 
 $nomErr = $emailErr = $villeErr = $adresseErr = $codepostalErr = $nbconvErr =  $dateresaErr= $telephoneErr = "";
-$nom = $email = $website = $message = $prenom = $adresse = $codepostal = $ville = $telephone = $dateresa = $service = $nbconv = $midi = $soir = $disp = "";
-
-try{
-    //creation de l'objet pdo
-    $db=new PDO("mysql:host=$host;dbname=$db",$user,$password,array(PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8'));
-
-}catch(PDOException $e){//erreur de connexion
-    print"Erreur : ".$e->getMessage();
-    die();
-}
-
-
-$disp=("SELECT SUM(NbConvives) as total FROM reservation where DateHeureRepas = '$dateresa'"); //2021-12-22 12:00:00
-    
-    $sql = $db->query($disp);
-
-    $sql->setFetchMode(PDO::FETCH_OBJ);// Récupérer sous forme d’objet
-
-    $res = $sql->fetch();
-
-    $total = $res ->total;
-
-    echo $total ;
-
-    $resa=("INSERT INTO `reservation`(`Code`, `Date`, `NumClient`, `DateHeureRepas`, `NbConvives`, `Confirme`) 
-            VALUES (NULL,$dateresa,NULL,$dateresa,$nbconv,'1'");
-    $db->query($resa);
-    echo $resa;
-    
-function dispo($dateresa,$nbconv,$db){
-
-    $disp=("SELECT SUM(NbConvives) as total FROM reservation where DateHeureRepas = '$dateresa'"); //2021-12-22 12:00:00
-    
-    $sql = $db->query($disp);
-
-    $sql->setFetchMode(PDO::FETCH_OBJ);// Récupérer sous forme d’objet
-
-    $res = $sql->fetch();
-
-    $total = $res ->total;
-
-    echo $total ;
-
-
-    if($total+$nbconv>30){
-        echo "Nombre max de résa pour cette date atteint";
-        die();}
-}
-
-function reservation($dateresa, $nbconv, $db){
-    $resa=("INSERT INTO `reservation`(`Code`, `Date`, `NumClient`, `DateHeureRepas`, `NbConvives`, `Confirme`) 
-            VALUES (NULL,'2021-12-21',NULL ,$dateresa,$nbconv,'1'");
-    $db->query($resa);
-}
-
-// $code_select="";
-// $requete="SELECT Nom FROM client;";
-// if(isset($_GET['sub'])){
-// //$code_select=$_GET["code"];
-// }
+$nom = $email = $website = $message = $prenom = $adresse = $codepostal = $ville = $telephone = $dateresa = $service = $nbconv = $midi = $soir = $disp = $numClient= "";
 
 if(isset($_GET['sub'])){
     $nom=$_GET['nom'];
@@ -80,66 +23,28 @@ if(isset($_GET['sub'])){
     $soir=$_GET['service'];
     $nbconv=$_GET['nbconv'];
 
-
     
-        // $sql= ("SELECT Nom FROM client" ); <TEST pour voir si la connexion est faite avec la bdd>
-        // foreach($db->query($sql) as $row){
-            
-        //     echo $row['Nom']; 
-            
-        // }
-        reservation($dateresa, $nbconv, $db);
-        dispo($dateresa,$nbconv,$db);
-        
-            
+}
 
+try{
+    //creation de l'objet pdo
+    $db=new PDO("mysql:host=$host;dbname=$db",$user,$password,array(PDO::MYSQL_ATTR_INIT_COMMAND=>'SET NAMES utf8'));
 
-        // $disp=("SELECT SUM(NbConvives) as total FROM reservation where DateHeureRepas = '$dateresa'"); //2021-12-22 12:00:00
-        // $sql = $db->query($disp);
-        //     if($sql){
-        //         $sql->setFetchMode(PDO::FETCH_OBJ);// Récupérer sous forme d’objet
-
-        //         $res = $sql->fetch();
-        
-        //         $total = $res ->total;
-        
-        //         echo $total ;
-        //     }
-       
-       
-        //add client to db//
-        // $insert= ("INSERT INTO client (NumClient, Nom, Prenom, Adresse, CodePostal, Ville,  Mail, Telephone)
-        // VALUES (NULL,'$nom', '$prenom','$adresse','$codepostal','$ville','$email','$telephone')" );
-        // $sql=("SELECT Nom, Prenom, Mail from client;");
-
-        
-        // $db->query($insert);
-
-        
-
-
-
-        
-    
-            
- 
-    
-    function ajout($email){
-        $check=("SELECT Mail from client");
-        foreach($db->query($check) as $row){
-            if($email===$check){
-
-            }
+    if(dispo($dateresa,$nbconv,$db)){
+       //echo "OK";
+        $numClient = ClientConnu($db, $email);
+        if ($numClient == 0){
+            $numClient = CreerClient($db,$nom, $prenom, $email, $adresse, $codepostal, $ville, $telephone);
         }
+        echo "Numéro de Client : $numClient<br>";
+        reservation($db, $numClient, $dateresa, $nbconv);
+    }else{
+        echo "Nous n'avons pas assez de place pour le service souhaité<br>Veuillez choisir un autre service";
     }
 
-
-
-    
-
-
-
-
+}catch(PDOException $e){//erreur de connexion
+    print"Erreur : ".$e->getMessage();
+    die();
 }
 
 
@@ -242,18 +147,7 @@ if(isset($_GET['sub'])){
     
             
     
-    // $conn = new mysqli($host,$user,$password,$db);
-    // if($conn->connect_error){
-    // die("Connection failed: ". $conn->connect_error);
-
-
-    // $sql="INSERT INTO client (Nom, Prenom, email)
-    //     values ('$nom','$prenom','$email')";
-
-
-    // if($conn->query($sql) === TRUE){
-    //     echo "reussi";
-    //     }else{"erreur";}
+    
 
     
 
